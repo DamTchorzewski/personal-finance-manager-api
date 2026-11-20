@@ -1,16 +1,13 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Wallet API",
+    "title": "Personal Finance Manager API",
     "version": "1.0.0",
-    "description": ""
+    "description": "Transactions of the signed-in user. Accounts and sign-in are handled by Firebase Authentication; send the Firebase ID token as `Authorization: Bearer <token>`."
   },
   "servers": [
     {
-      "url": "https://wallet-sdqv.onrender.com"
-    },
-    {
-      "url": "http://localhost:2200"
+      "url": "/"
     }
   ],
   "components": {
@@ -18,7 +15,7 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "bearerFormat": "Firebase ID token (JWT)"
       }
     },
     "parameters": {
@@ -52,7 +49,10 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["+", "-"]
+            "enum": [
+              "+",
+              "-"
+            ]
           },
           "category": {
             "type": "string",
@@ -158,17 +158,6 @@
       }
     },
     "schemas": {
-      "Login": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          }
-        }
-      },
       "User": {
         "type": "object",
         "properties": {
@@ -257,305 +246,6 @@
     }
   ],
   "paths": {
-    "/api/users/register": {
-      "post": {
-        "tags": ["Users"],
-        "summary": "Create a new user",
-        "requestBody": {
-          "required": "true",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#components/requestBodies/User"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "integer",
-                      "example": 201
-                    },
-                    "statusText": {
-                      "type": "string",
-                      "example": "Created"
-                    },
-                    "result": {
-                      "type": "object",
-                      "properties": {
-                        "user": {
-                          "$ref": "#components/schemas/User"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request. User validation failed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#components/schemas/Validation"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "E-mail is already in use.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "number",
-                      "example": 409
-                    },
-                    "statusText": {
-                      "type": "string",
-                      "example": "Conflict"
-                    },
-                    "result": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/login": {
-      "post": {
-        "tags": ["Users"],
-        "summary": "Login user",
-        "requestBody": {
-          "required": "true",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#components/schemas/Login"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "statusText": {
-                      "type": "string",
-                      "example": "OK"
-                    },
-                    "result": {
-                      "type": "object",
-                      "properties": {
-                        "token": {
-                          "type": "string"
-                        },
-                        "user": {
-                          "$ref": "#components/schemas/User"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#components/responses/401Unauthorized"
-          },
-          "400": {
-            "description": "Bad request. User validation failed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#components/schemas/Validation"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/logout": {
-      "post": {
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "tags": ["Users"],
-        "summary": "Log out user",
-        "responses": {
-          "204": {
-            "description": "The user is logged out."
-          },
-          "401": {
-            "$ref": "#components/responses/401Unauthorized"
-          }
-        }
-      }
-    },
-    "/api/users/reverify": {
-      "post": {
-        "tags": ["Users"],
-        "summary": "Resend the verification email",
-        "requestBody": {
-          "required": "true",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "statusText": {
-                      "type": "string",
-                      "example": "OK"
-                    },
-                    "result": {
-                      "type": "object",
-                      "properties": {
-                        "user": {
-                          "type": "object",
-                          "properties": {
-                            "email": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request. Verification has already been passed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#components/schemas/Validation"
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#components/responses/404NotFound"
-          }
-        }
-      }
-    },
-    "/api/users/verify/{verificationToken}": {
-      "get": {
-        "tags": ["Users"],
-        "summary": "Verification email confirmation",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "verificationToken",
-            "required": "true",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "integer",
-                      "example": 200
-                    },
-                    "statusText": {
-                      "type": "string",
-                      "example": "OK"
-                    },
-                    "result": {
-                      "type": "object",
-                      "properties": {
-                        "user": {
-                          "type": "object",
-                          "properties": {
-                            "email": {
-                              "type": "string"
-                            },
-                            "verify": {
-                              "type": "boolean"
-                            }
-                          }
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#components/responses/404NotFound"
-          }
-        }
-      }
-    },
     "/api/users/current": {
       "get": {
         "security": [
@@ -563,7 +253,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Get information about the current user",
         "responses": {
           "200": {
@@ -597,7 +289,8 @@
           "401": {
             "$ref": "#components/responses/401Unauthorized"
           }
-        }
+        },
+        "description": "The signed-in user, read from the verified Firebase ID token."
       }
     },
     "/api/transactions": {
@@ -607,7 +300,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["Transactions"],
+        "tags": [
+          "Transactions"
+        ],
         "summary": "Gets user transactions",
         "responses": {
           "200": {
@@ -644,7 +339,9 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["Transactions"],
+        "tags": [
+          "Transactions"
+        ],
         "summary": "Posts user transactions",
         "requestBody": {
           "required": "true",
@@ -703,9 +400,15 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["Transactions"],
+        "tags": [
+          "Transactions"
+        ],
         "summary": "Deletes user transactions by ID",
-        "parameters": [{ "$ref": "#components/parameters/TransactionId" }],
+        "parameters": [
+          {
+            "$ref": "#components/parameters/TransactionId"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -745,9 +448,15 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["Transactions"],
+        "tags": [
+          "Transactions"
+        ],
         "summary": "Updates user transactions by ID",
-        "parameters": [{ "$ref": "#components/parameters/TransactionId" }],
+        "parameters": [
+          {
+            "$ref": "#components/parameters/TransactionId"
+          }
+        ],
         "requestBody": {
           "required": "true",
           "content": {
@@ -805,9 +514,15 @@
             "bearerAuth": []
           }
         ],
-        "tags": ["Transactions"],
+        "tags": [
+          "Transactions"
+        ],
         "summary": "Gets transaction categories by ID",
-        "parameters": [{ "$ref": "#components/parameters/TransactionId" }],
+        "parameters": [
+          {
+            "$ref": "#components/parameters/TransactionId"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",

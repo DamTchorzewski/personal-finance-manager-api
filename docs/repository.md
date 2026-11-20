@@ -4,7 +4,7 @@ Rzeczy, które ustawia się na GitHubie ręcznie (nie da się ich zapisać w pli
 
 ## Nazwa repozytorium: `personal-finance-manager-api`
 
-Standard nazw repozytoriów: `reops/standards/repo-names.md`. Repozytorium nazywało się wcześniej `wallet`; od 2026-11-20 nazywa się `personal-finance-manager-api` (nazwa mówi, czym jest projekt: fraza szukana na GitHubie; rola, `-api`, jest na końcu, jak w standardzie). To API aplikacji z repozytorium `personal-finance-manager`. GitHub przekierowuje stary adres repozytorium. Instancja, z którą łączy się aplikacja (`wallet-sdqv.onrender.com`), jest podpięta do repozytorium w panelu hostingu: po zmianie nazwy sprawdź, że wdrożenia nadal się uruchamiają.
+Standard nazw repozytoriów: `reops/standards/repo-names.md`. Repozytorium nazywało się wcześniej `wallet`; od 2026-11-20 nazywa się `personal-finance-manager-api` (nazwa mówi, czym jest projekt: fraza szukana na GitHubie; rola, `-api`, jest na końcu, jak w standardzie). To API aplikacji z repozytorium `personal-finance-manager`. GitHub przekierowuje stary adres repozytorium. Hosting przeniesiono z Render na Google Cloud Run, z logowaniem Firebase i bazą Firestore (zamiast własnego JWT i MongoDB).
 
 ## Opis i tagi (About)
 
@@ -13,19 +13,19 @@ GitHub: strona repozytorium → ⚙ obok „About” → pola poniżej. Opis ma 
 **Opis (Description):**
 
 ```text
-REST API for a personal finance app: Node.js, Express, MongoDB, JWT authentication and Swagger docs.
+REST API for a personal finance app: Node.js, Express, Firestore, Firebase Auth and Swagger docs, on Cloud Run.
 ```
 
 **Tagi (Topics):**
 
 ```text
-nodejs express mongodb mongoose rest-api jwt passport swagger openapi personal-finance nodemailer joi
+nodejs express firebase firestore firebase-auth google-cloud cloud-run rest-api swagger openapi personal-finance joi
 ```
 
 Z GitHub CLI (`gh`) to samo jedną komendą:
 
 ```bash
-gh repo edit DamTchorzewski/personal-finance-manager-api --description "REST API for a personal finance app: Node.js, Express, MongoDB, JWT authentication and Swagger docs." --add-topic nodejs --add-topic express --add-topic mongodb --add-topic mongoose --add-topic rest-api --add-topic jwt --add-topic passport --add-topic swagger --add-topic openapi --add-topic personal-finance --add-topic nodemailer --add-topic joi
+gh repo edit DamTchorzewski/personal-finance-manager-api --description "REST API for a personal finance app: Node.js, Express, Firestore, Firebase Auth and Swagger docs, on Cloud Run." --add-topic nodejs --add-topic express --add-topic firebase --add-topic firestore --add-topic firebase-auth --add-topic google-cloud --add-topic cloud-run --add-topic rest-api --add-topic swagger --add-topic openapi --add-topic personal-finance --add-topic joi
 ```
 
 ## Ustawienia do włączenia
@@ -33,4 +33,4 @@ gh repo edit DamTchorzewski/personal-finance-manager-api --description "REST API
 | Gdzie (GitHub)                      | Co ustawić                                                                        |
 | ----------------------------------- | --------------------------------------------------------------------------------- |
 | Settings → General → Default branch | `main` (już jest)                                                                 |
-| Hosting (Render)                    | połączenie z repozytorium po zmianie nazwy: sprawdź, że kolejny push uruchamia wdrożenie |
+| Settings → Environments → `production` | zmienne wdrożenia na Cloud Run, patrz [deployment.md](deployment.md) |

@@ -1,68 +1,51 @@
-import Transaction from '../models/transactions.js';
+import { db } from '../config/firebase.js';
 
-const getTransactions = async userId => {
-  try {
-    return await Transaction.find({
-      owner: userId,
-    })
-      .sort({ 'date.year': -1, 'date.month': -1, 'date.day': -1 })
-      .lean();
-  } catch (err) {
-    console.error(err.message);
-  }
+// Each user has their own collection: users/{uid}/transactions/{id}. The documents keep the fields the web app sends
+// (type, category, date, comment, sum) plus createdAt and updatedAt; the API returns the document id as _id.
+const collection = uid =>
+  db.collection('users').doc(uid).collection('transactions');
+
+const toItem = doc => ({ _id: doc.id, ...doc.data() });
+
+const byDateDesc = (a, b) =>
+  `${b.date.year}${b.date.month}${b.date.day}`.localeCompare(
+    `${a.date.year}${a.date.month}${a.date.day}`
+  );
+
+const getTransactions = async uid => {
+  const snapshot = await collection(uid).get();
+  return snapshot.docs.map(toItem).sort(byDateDesc);
 };
 
-const getTransactionCategory = async (userId, id) => {
-  try {
-    const { category } = await Transaction.findOne(
-      {
-        owner: userId,
-        _id: id,
-      },
-      { category: 1 }
-    ).lean();
-
-    return category;
-  } catch (err) {
-    console.error(err.message);
-  }
+const getTransactionCategory = async (uid, id) => {
+  const doc = await collection(uid).doc(id).get();
+  return doc.exists ? doc.data().category : undefined;
 };
 
-const createTransaction = async body => {
-  try {
-    return await Transaction.create(body);
-  } catch (err) {
-    console.error(err.message);
-    throw err;
-  }
+const createTransaction = async (uid, body) => {
+  const now = new Date().toISOString();
+  const ref = await collection(uid).add({
+    ...body,
+    createdAt: now,
+    updatedAt: now,
+  });
+  return toItem(await ref.get());
 };
 
-const removeTransaction = async (userId, id) => {
-  try {
-    return await Transaction.findOneAndRemove({
-      owner: userId,
-      _id: id,
-    }).lean();
-  } catch (err) {
-    console.error(err.message);
-  }
+const removeTransaction = async (uid, id) => {
+  const ref = collection(uid).doc(id);
+  const doc = await ref.get();
+  if (!doc.exists) return null;
+  await ref.delete();
+  return toItem(doc);
 };
 
-const updateTransaction = async (userId, id, body) => {
-  const opts = {
-    new: true,
-    runValidators: true,
-  };
-  try {
-    return await Transaction.findOneAndUpdate(
-      { owner: userId, _id: id },
-      body,
-      opts
-    ).lean();
-  } catch (err) {
-    console.error(err.message);
-    throw err;
-  }
+const updateTransaction = async (uid, id, body) => {
+  const ref = collection(uid).doc(id);
+  const doc = await ref.get();
+  if (!doc.exists) return null;
+  await ref.update({ ...body, updatedAt: new Date().toISOString() });
+  return toItem(await ref.get());
 };
 
 const service = {

@@ -1,50 +1,48 @@
 import Joi from 'joi';
 
-export const userRegisterSchema = Joi.object().keys({
-  username: Joi.string().min(1).max(12).trim().required().messages({
-    'string.base': 'Username must be a string',
-    'string.min': 'Username must contain at least 1 character',
-    'string.max': 'Username must contain max 12 characters',
-    'any.required': 'Username is required',
-  }),
+const CATEGORIES = [
+  'Main expenses',
+  'Products',
+  'Car',
+  'Self care',
+  'Child care',
+  'Household products',
+  'Education',
+  'Leisure',
+  'Other expenses',
+  'Entertainment',
+  'Income',
+];
 
-  email: Joi.string().email().trim().required().messages({
-    'string.base': 'E-mail must be a string',
-    'string.email': 'Enter a valid e-mail address',
-    'any.required': 'E-mail is required',
-  }),
-
-  password: Joi.string().min(6).max(12).trim().required().messages({
-    'string.base': 'Password must be a string',
-    'string.min': 'Password must contain at least 6 characters',
-    'string.max': 'Password must contain max 12 characters',
-    'any.required': 'Password is required',
-  }),
+const date = Joi.object({
+  day: Joi.string().trim().required(),
+  month: Joi.string().trim().required(),
+  year: Joi.string().trim().required(),
 });
 
-export const userLoginSchema = Joi.object().keys({
-  email: Joi.string().email().trim().required().messages({
-    'string.base': 'E-mail must be a string',
-    'string.email': 'Enter a valid e-mail address',
-    'any.required': 'E-mail is required',
-  }),
+const fields = {
+  type: Joi.string().valid('-', '+'),
+  category: Joi.string().valid(...CATEGORIES),
+  date,
+  comment: Joi.string().trim(),
+  sum: Joi.alternatives(Joi.string().trim(), Joi.number()).custom(String),
+};
 
-  password: Joi.string().min(6).max(12).trim().required().messages({
-    'string.base': 'Password must be a string',
-    'string.min': 'Password must contain at least 6 characters',
-    'string.max': 'Password must contain max 12 characters',
-    'any.required': 'Password is required',
-  }),
+// A new transaction: every field but the category is required.
+export const transactionCreateSchema = Joi.object({
+  ...fields,
+  type: fields.type.required(),
+  date: fields.date.required(),
+  comment: fields.comment.required(),
+  sum: fields.sum.required(),
 });
 
-export const userLogoutSchema = Joi.object({}).unknown(false).messages({
-  'object.unknown': 'Body must be empty',
+// An update: any of the fields; the web app also sends the id of the transaction, which is ignored.
+export const transactionUpdateSchema = Joi.object({
+  ...fields,
+  id: Joi.any().strip(),
 });
 
-export const userReverifySchema = Joi.object().keys({
-  email: Joi.string().email().trim().required().messages({
-    'string.base': 'E-mail must be a string',
-    'string.email': 'Enter a valid e-mail address',
-    'any.required': 'E-mail is required',
-  }),
-});
+// Unknown keys are dropped, so a request cannot write fields the API does not define.
+export const validate = (schema, body) =>
+  schema.validateAsync(body, { stripUnknown: true });

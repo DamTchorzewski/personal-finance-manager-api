@@ -1,10 +1,21 @@
 import service from '../services/transactions.js';
 import { handleValidationError } from '../utils/handleErrors.js';
+import {
+  transactionCreateSchema,
+  transactionUpdateSchema,
+  validate,
+} from '../utils/validation.js';
+
+const notFound = (res, id) =>
+  res.status(404).json({
+    status: 404,
+    statusText: 'Not Found',
+    result: { message: `Not found transaction id: ${id}` },
+  });
 
 const get = async (req, res, next) => {
-  const { _id } = req.user;
   try {
-    const result = await service.getTransactions({ _id });
+    const result = await service.getTransactions(req.user.uid);
     res.json({ status: 200, statusText: 'OK', result });
   } catch (err) {
     next(err);
@@ -13,42 +24,23 @@ const get = async (req, res, next) => {
 
 const getCategory = async (req, res, next) => {
   const { id } = req.params;
-  const userId = req.user._id;
   try {
-    const result = await service.getTransactionCategory(userId, id);
+    const result = await service.getTransactionCategory(req.user.uid, id);
 
-    if (result) {
-      return res.json({
-        status: '200',
-        statusText: 'OK',
-        result,
-      });
-    }
+    if (!result) return notFound(res, id);
 
-    res.status(404).json({
-      status: '404',
-      statusText: 'Not Found',
-      result: { message: `Not found transaction id: ${id}` },
-    });
+    res.json({ status: 200, statusText: 'OK', result });
   } catch (err) {
     next(err);
   }
 };
 
 const create = async (req, res, next) => {
-  const { _id } = req.user;
-  const transactionData = req.body;
   try {
-    const result = await service.createTransaction({
-      ...transactionData,
-      owner: _id,
-    });
+    const body = await validate(transactionCreateSchema, req.body);
+    const result = await service.createTransaction(req.user.uid, body);
 
-    res.json({
-      status: 201,
-      statusText: 'Created',
-      result,
-    });
+    res.status(201).json({ status: 201, statusText: 'Created', result });
   } catch (err) {
     handleValidationError(err, res, next);
   }
@@ -56,23 +48,12 @@ const create = async (req, res, next) => {
 
 const remove = async (req, res, next) => {
   const { id } = req.params;
-  const userId = req.user._id;
   try {
-    const result = await service.removeTransaction(userId, id);
+    const result = await service.removeTransaction(req.user.uid, id);
 
-    if (result) {
-      return res.json({
-        status: 200,
-        statusText: 'OK',
-        result,
-      });
-    }
+    if (!result) return notFound(res, id);
 
-    res.status(404).json({
-      status: 404,
-      statusText: 'Not Found',
-      result: { message: `Not found transaction id: ${id}` },
-    });
+    res.json({ status: 200, statusText: 'OK', result });
   } catch (err) {
     next(err);
   }
@@ -80,26 +61,13 @@ const remove = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   const { id } = req.params;
-  const userId = req.user._id;
-  const transactionData = req.body;
   try {
-    const result = await service.updateTransaction(userId, id, {
-      ...transactionData,
-    });
+    const body = await validate(transactionUpdateSchema, req.body);
+    const result = await service.updateTransaction(req.user.uid, id, body);
 
-    if (result) {
-      return res.json({
-        status: 200,
-        statusText: 'OK',
-        result,
-      });
-    }
+    if (!result) return notFound(res, id);
 
-    res.status(404).json({
-      status: 404,
-      statusText: 'Not Found',
-      result: { message: `Not found transaction id: ${id}` },
-    });
+    res.json({ status: 200, statusText: 'OK', result });
   } catch (err) {
     handleValidationError(err, res, next);
   }
