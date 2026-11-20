@@ -26,6 +26,10 @@ Region wszędzie: `europe-west1` (Belgia).
 5. W Firebase: **Project settings (kółko zębate) → General → Your apps → ikona web `</>`** → nazwa `personal-finance-manager`,
    *Register app* (Firebase Hosting nie zaznaczaj). Skopiuj z `firebaseConfig` pięć wartości: `apiKey`, `authDomain`,
    `projectId`, `appId`, `messagingSenderId`. To publiczne identyfikatory aplikacji webowej, nie sekrety.
+6. (Opcjonalnie) **Authentication → Templates → Email address verification → Customize action URL** → adres aplikacji
+   `https://damtchorzewski.github.io/personal-finance-manager/`. Wtedy link z maila weryfikacyjnego otwiera od razu
+   aplikację, która potwierdza adres i loguje użytkownika; bez tego link kończy na stronie Firebase z przyciskiem
+   „Continue", który też wraca do aplikacji.
 
 ## 2. Jednorazowa konfiguracja w Cloud Shell
 
