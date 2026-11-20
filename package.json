@@ -19,7 +19,6 @@
     "firebase-admin": "^14.5.1",
     "joi": "^18.3.2",
     "morgan": "1.10.0",
-    "punycode": "^2.3.1",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
