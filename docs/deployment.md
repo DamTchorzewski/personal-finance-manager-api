@@ -62,9 +62,15 @@ done
 gcloud iam service-accounts add-iam-policy-binding "$RUN_SA" \
   --member="serviceAccount:${DEPLOY_SA}" --role="roles/iam.serviceAccountUser"
 
-# budowanie z kodu używa domyślnego konta Compute
+# budowanie z kodu używa domyślnego konta Compute; konto wdrażające musi móc działać jako ono
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" --role="roles/cloudbuild.builds.builder"
+gcloud iam service-accounts add-iam-policy-binding "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --member="serviceAccount:${DEPLOY_SA}" --role="roles/iam.serviceAccountUser"
+
+# repozytorium obrazów, które Cloud Run tworzy przy pierwszym wdrożeniu z kodu (konto wdrażające nie ma prawa go tworzyć)
+gcloud artifacts repositories create cloud-run-source-deploy --repository-format=docker --location="$REGION" \
+  --description="Cloud Run source deploys" || true
 
 # GitHub Actions bez klucza: Workload Identity Federation, tylko dla tego repozytorium
 gcloud iam workload-identity-pools create github --location=global --display-name="GitHub" || true
@@ -72,7 +78,7 @@ gcloud iam workload-identity-pools providers create-oidc github-provider --locat
   --workload-identity-pool=github --issuer-uri="https://token.actions.githubusercontent.com" \
   --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
   --attribute-condition="assertion.repository=='${REPO}'" || true
-POOL=$(gcloud iam workload-identity-pools describe github --location=global --format='value(name)')
+POOL="projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github"
 gcloud iam service-accounts add-iam-policy-binding "$DEPLOY_SA" --role="roles/iam.workloadIdentityUser" \
   --member="principalSet://iam.googleapis.com/${POOL}/attribute.repository/${REPO}"
 
@@ -84,6 +90,13 @@ echo "GCP_WORKLOAD_IDENTITY_PROVIDER=${POOL}/providers/github-provider"
 ```
 
 Na końcu skrypt wypisuje cztery wartości (nazwy zmiennych GitHuba). To nie są sekrety.
+
+Wskazówki, gdy coś się nie uda:
+- Wklejaj skrypt częściami (kilka komend naraz): wklejenie całości naraz potrafi skleić ostatnie linie.
+- „concurrent policy changes" przy `add-iam-policy-binding` to chwilowy konflikt, wystarczy powtórzyć tę jedną komendę.
+- Przy wdrożeniu błąd „caller does not have permission to act as service account <numer>" oznacza brak roli
+  `roles/iam.serviceAccountUser` konta wdrażającego na koncie budowania (komenda wyżej); `gcloud iam service-accounts list
+  --format="table(email,uniqueId)"` pokaże, które konto ma ten numer.
 
 ## 3. GitHub
 
