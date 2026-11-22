@@ -137,4 +137,13 @@ Commits in English. `deploy.yml` deploys every push to `main` (not documentation
 
 The README images (`docs/images/`) are regenerated with `tools/readme-images`, profile `personal-finance-manager-api`; the working shots go to `.scratch/`.
 
+## Versions
+
+This repository stays as it is; the API continues as version 2.
+
+| Version | Repository | Made by |
+| --- | --- | --- |
+| 1 (this repository) | `personal-finance-manager-api` | [Damian Tchorzewski](https://github.com/DamTchorzewski) |
+| 2 | [`finance-tracker-api`](https://github.com/DamTchorzewski/finance-tracker-api) | [Damian Tchorzewski](https://github.com/DamTchorzewski) |
+
 Author: [Damian Tchorzewski](https://github.com/DamTchorzewski). Licensed under the [MIT License](LICENSE).
